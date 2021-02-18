@@ -1,12 +1,10 @@
-import path from "path";
+import { resolve as resolvePath } from 'path';
 import * as MRE from '@microsoft/mixed-reality-extension-sdk';
 import App from './app';
 
-const __dirname = path.dirname(import.meta.url.substring(8));
-
 function main() {
     const server = new MRE.WebHost({
-        baseDir: path.resolve(__dirname, '../public')
+        baseDir: resolvePath(__dirname, '../public')
     });
 
     server.adapter.onConnection(ctx => new App(ctx));

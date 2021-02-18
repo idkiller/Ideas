@@ -7,7 +7,7 @@
         "rootDir": "./src",
         "skipLibCheck": true,
         "target": "esnext",
-        "module": "ESNext",
+        "module": "commonjs",
         "lib": ["esnext"],
         "declaration": true,
         "declarationMap": true,
