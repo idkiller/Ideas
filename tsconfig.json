@@ -1,0 +1,21 @@
+{
+    "include": [
+        "./src"
+    ],
+    "compilerOptions": {
+        "outDir": "./built",
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "target": "esnext",
+        "module": "ESNext",
+        "lib": ["esnext"],
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "composite": true,
+        "strict": true,
+        "strictNullChecks": false,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+    }
+}
