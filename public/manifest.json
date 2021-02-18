@@ -1,0 +1,7 @@
+{
+    "name": "AR-Ideas-Demo",
+    "author": "Samsung Electronics",
+    "license": "MIT",
+    "repositoryUrl": "https://github.com/idkiller/Ideas",
+    "optionalPermissions": ["user-interaction"]
+}
