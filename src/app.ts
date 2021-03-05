@@ -14,7 +14,7 @@ export default class Ideas {
     }
 
     private async createNote(txt: string) {
-        const gltf = await this.assets.loadGltf('note.gltf', 'box');
+        const gltf = await this.assets.loadGltf('note.glb', 'box');
         const note = MRE.Actor.CreateFromPrefab(this.ctx, {
             firstPrefabFrom: gltf,
             actor: {
