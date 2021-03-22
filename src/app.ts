@@ -1,80 +1,77 @@
 import * as MRE from "@microsoft/mixed-reality-extension-sdk";
 import { Asset, Guid } from "@microsoft/mixed-reality-extension-sdk";
 import axios from 'axios';
+import { Note } from "./note";
 
 const RPC = {
     ObjectDetected: "object-detected",
-    LocationChanged: "location-changed"
+    LocationChanged: "location-changed",
+    UserRegister: "user-register"
+}
+
+interface User {
+    token?: string,
+    id: string,
+    name: string,
+    friends: Array<string>
 }
 
 export default class Ideas {
-    private actorIndex: number;
     private assets: MRE.AssetContainer;
 
-    private detects: Array<ObjectInfo>;
-    private actors: Array<MRE.Actor>;
+    private detects: { [id: string]: Array<ObjectInfo>};
 
-    private postitAsset: Asset[];
     private memos: Array<Memo>;
 
+    private userTokenMap: { [token: string]: User };
+
     constructor(private ctx: MRE.Context) {
-        this.detects = [];
-        this.actors = [];
+        this.userTokenMap = {};
+        this.detects = {};
         this.memos = [];
         this.assets = new MRE.AssetContainer(this.ctx);
         this.ctx.onStarted(() => this.started());
+        this.ctx.onUserJoined(this.onUserJoined.bind(this));
     }
 
     private async started() {
-        console.log("start 1");
-        this.postitAsset = await this.assets.loadGltf('postit.glb', 'box');
-        console.log("start 2");
+        this.ctx.rpc.on(RPC.UserRegister, this.onUserRegister.bind(this));
         this.ctx.rpc.on(RPC.ObjectDetected, this.onObjectDetected.bind(this));
         this.ctx.rpc.on(RPC.LocationChanged, this.onLocationChanged.bind(this));
     }
 
-    private createNote(txt: string, offset?: {x: number, y: number, z: number}) {
-        console.log("=============================== createNote start");
-        this.actorIndex++;
-        offset = (typeof offset === 'undefined') ? {x: 0, y: 0, z: 0} : offset;
-        const note = MRE.Actor.CreateFromPrefab(this.ctx, {
-            firstPrefabFrom: this.postitAsset,
-            actor: {
-                name: 'note' + this.actorIndex,
-                transform: {
-                    app: { position: offset }
+    private onUserJoined(user: MRE.User): void {
+        console.log(`user: ${user.id}, ${user.name}, ${user.context == this.ctx}`);
+        for (const k in user.properties) {
+            console.log (`      ${k} : ${user.properties[k]}`);
+        }
+    }
+
+    private onUserRegister(options: { userId: Guid; }, ...args: any[]) : void {
+        const token = args[0];
+        console.log(`User Register... : ${token}`);
+        axios.get(`https://dev.arp.tizenservice.xyz/api/v1/graph/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+        }).
+        then(resp => {
+            const user = resp.data as User;
+            for (const t in this.userTokenMap) {
+                if (this.userTokenMap[t].id == user.id) {
+                    delete this.userTokenMap[t];
+                    break;
                 }
             }
+            this.userTokenMap[token] = user;
         });
-        console.log(`position: {x: ${offset.x}, y: ${offset.y}, z: ${offset.z}}`);
-        MRE.Actor.Create(this.ctx, {
-            actor: {
-                name: 'note-txt' + this.actorIndex,
-                parentId: note.id,
-                transform: {
-                    local: {
-                        position: {x: 0, y: 0, z: 0}
-                    }
-                },
-                text: {
-                    contents: txt,
-                    anchor: MRE.TextAnchorLocation.MiddleCenter,
-                    color: { r: 255 / 255, g: 0 / 255, b: 0 / 255 },
-                    height: 0.01
-                }
-            }
-        });
-        console.log("=============================== createNote end");
-        this.actors.push(note);
-        return note;
+    }
+
+    private calcDistanceTwoPosition(a: {x: number, y: number, z: number}, b: {x: number, y: number, z: number}) {
+        return Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2) + Math.pow(b.z - a.z, 2);
     }
 
     private onObjectDetected(options: { userId: Guid; }, ...args: any[]) : void
     {
-        console.log("=============================== 1");
-        console.log(options);
-        console.log(args);
-
+        console.log(`onObjectDetected... user [${options.userId}]`);
         const objectType = args[0];
         const x = args[1];
         const y = args[2];
@@ -82,44 +79,74 @@ export default class Ideas {
         const position = x instanceof Number && y instanceof Number && z instanceof Number ?
             { x:0, y:0, z:0 } : {x, y, z};
 
-        this.detects.push({type: objectType, position});
-        this.syncObjects();
-        console.log("=============================== 2");
+        
+        for (let i = 0; i < this.ctx.users.length; i++) {
+            console.log(this.ctx.users[i].name);
+        }
+        /*
+        if (this.userTokenMap[token]) {
+            if (!this.detects[this.userTokenMap[token].id]) {
+                this.detects[this.userTokenMap[token].id] = [];
+            }
+            const same = this.detects[this.userTokenMap[token].id].find(v => v.type == objectType && v.position);
+            if (!same) {
+                this.detects[this.userTokenMap[token].id].push({type: objectType, position});
+            }
+
+            this.syncObjects();
+        }
+        */
     }
 
     private onLocationChanged(options: { userId: Guid; }, ...args: any[]) : void
     {
+        console.log(`onLocationChanged... user [${options.userId}]`);
         const locationId = args[0];
-        axios.get(`https://dev.arp.tizenservice.xyz/api/v1/object/locations/${locationId}`).
+        const token = args[1];
+        console.log(locationId);
+        console.log(token);
+        axios.get(`https://dev.arp.tizenservice.xyz/api/v1/object/locations/${locationId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        }).
         then(resp => {
-            this.memos = resp.data as Array<Memo>;
-            for (let i = 0; i < this.actors.length; i++)
-            {
-                this.actors[i].destroy();
+            for (let i = 0; i < this.memos.length; i++) {
+                this.memos[i].linkedObject?.hide();
+                this.memos[i].linkedObject = null;
             }
+            this.memos = resp.data as Array<Memo>;
             this.syncObjects();
         });
     }
 
     private syncObjects()
     {
-        console.log("syncOjbects start ..............");
         if (this.memos.length < 1)
         {
             return;
         }
-        console.log("detects = " + this.detects.length);
-        for (let i = 0; i < this.detects.length; i++) {
-            for (let m = 0; m < this.memos.length; m++) {
-                if (this.memos[m].linkedObjectType === this.detects[i].type)
+
+        for (let i = 0; i < this.memos.length; i++) {
+            console.log(
+                `creator: ${this.memos[i].creatorId}\n` +
+                `type: ${this.memos[i].linkedObjectType}\n` +
+                `contents: ${this.memos[i].contents}\n`,
+                `permission: ${this.memos[i].permission}`
+            );
+            if (this.memos[i].linkedObject) continue;
+            /*
+            this.memos[i].linkedObject =
+                new Note(this.ctx, this.assets, 
+                    `type: ${this.memos[i].linkedObjectType}\n${this.memos[i].contents}`, 0.2, 0.2, {x:0, y:0, z:0}, `${this.memos[i].textureType}.png`);
+            for (let j=0; j < this.detects.length; j++) {
+                if (this.memos[i].linkedObjectType === this.detects[j].type)
                 {
-                    console.log(`${m} : ${this.memos[m].linkedObjectType}, ${this.memos[m].contents}`);
-                    this.memos[m].linkedObject = this.createNote(
-                        `[${this.memos[m].linkedObjectType}] ${this.memos[m].contents}`,
-                        this.detects[i].position);
+                    this.memos[i].linkedObject?.move(this.detects[j].position);
+                    console.log(this.detects[j].position);
+                    this.memos[i].linkedObject?.show();
                     break;
                 }
             }
+            */
         }
     }
 }
@@ -130,6 +157,7 @@ interface ObjectInfo {
 }
 
 interface Memo {
+    textureType: string,
     type: string;
     name: string;
     permission: string;
@@ -138,5 +166,5 @@ interface Memo {
     contents: string;
     id: string;
     creatorId: string;
-    linkedObject?: MRE.Actor;
+    linkedObject?: Note;
 }

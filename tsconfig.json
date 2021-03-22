@@ -6,9 +6,9 @@
         "outDir": "./built",
         "rootDir": "./src",
         "skipLibCheck": true,
-        "target": "esnext",
+        "target": "es2015",
         "module": "commonjs",
-        "lib": ["esnext"],
+        "lib": ["es2015"],
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
@@ -16,6 +16,6 @@
         "strict": true,
         "strictNullChecks": false,
         "moduleResolution": "node",
-        "esModuleInterop": true,
+        "esModuleInterop": true
     }
 }
