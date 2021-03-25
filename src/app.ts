@@ -1,5 +1,5 @@
 import * as MRE from "@microsoft/mixed-reality-extension-sdk";
-import { Asset, Guid } from "@microsoft/mixed-reality-extension-sdk";
+import { Asset, Guid, User } from "@microsoft/mixed-reality-extension-sdk";
 import axios from 'axios';
 import { Note } from "./note";
 
@@ -9,35 +9,36 @@ const RPC = {
     UserRegister: "user-register"
 }
 
-interface User {
-    token?: string,
-    id: string,
-    name: string,
-    friends: Array<string>
+interface Noteobject {
+    memoId: string,
+    type: string,
+    obj: Note
+}
+
+interface UserInfo {
+    user: MRE.User,
+    location: string,
+    token: string
 }
 
 export default class Ideas {
     private assets: MRE.AssetContainer;
+    private userMap: { [id: string]: UserInfo }
 
-    private detects: { [id: string]: Array<ObjectInfo>};
-
-    private memos: Array<Memo>;
-
-    private userTokenMap: { [token: string]: User };
+    private userObjects: { [userId: string]: Array<Noteobject> };
 
     constructor(private ctx: MRE.Context) {
-        this.userTokenMap = {};
-        this.detects = {};
-        this.memos = [];
+        this.userMap = {};
+        this.userObjects = {};
         this.assets = new MRE.AssetContainer(this.ctx);
         this.ctx.onStarted(() => this.started());
         this.ctx.onUserJoined(this.onUserJoined.bind(this));
+        this.ctx.rpc.on(RPC.LocationChanged, this.onLocationChanged.bind(this));
+        this.ctx.rpc.on(RPC.ObjectDetected, this.onObjectDetected.bind(this));
     }
 
     private async started() {
-        this.ctx.rpc.on(RPC.UserRegister, this.onUserRegister.bind(this));
-        this.ctx.rpc.on(RPC.ObjectDetected, this.onObjectDetected.bind(this));
-        this.ctx.rpc.on(RPC.LocationChanged, this.onLocationChanged.bind(this));
+        console.log("START Application");
     }
 
     private onUserJoined(user: MRE.User): void {
@@ -45,108 +46,95 @@ export default class Ideas {
         for (const k in user.properties) {
             console.log (`      ${k} : ${user.properties[k]}`);
         }
+
+        const userId = user.properties['userId'];
+        this.userMap[userId] = {
+            user,
+            location: "",
+            token: user.properties['token']
+        }
+        this.removeNotesFromUser(userId);
+        this.userObjects[userId] = [];
+        console.log(`user: ${user.name}[${userId}] is registed`);
     }
 
-    private onUserRegister(options: { userId: Guid; }, ...args: any[]) : void {
-        const token = args[0];
-        console.log(`User Register... : ${token}`);
-        axios.get(`https://dev.arp.tizenservice.xyz/api/v1/graph/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-        }).
-        then(resp => {
-            const user = resp.data as User;
-            for (const t in this.userTokenMap) {
-                if (this.userTokenMap[t].id == user.id) {
-                    delete this.userTokenMap[t];
-                    break;
-                }
-            }
-            this.userTokenMap[token] = user;
-        });
-    }
-
-    private calcDistanceTwoPosition(a: {x: number, y: number, z: number}, b: {x: number, y: number, z: number}) {
-        return Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2) + Math.pow(b.z - a.z, 2);
-    }
-
-    private onObjectDetected(options: { userId: Guid; }, ...args: any[]) : void
-    {
+    private onObjectDetected(options: { userId: Guid; }, ...args: any[]): void {
         console.log(`onObjectDetected... user [${options.userId}]`);
         const objectType = args[0];
         const x = args[1];
         const y = args[2];
         const z = args[3];
         const position = x instanceof Number && y instanceof Number && z instanceof Number ?
-            { x:0, y:0, z:0 } : {x, y, z};
+            { x: 0, y: 0, z: 0 } : { x, y, z };
 
-        
-        for (let i = 0; i < this.ctx.users.length; i++) {
-            console.log(this.ctx.users[i].name);
-        }
-        /*
-        if (this.userTokenMap[token]) {
-            if (!this.detects[this.userTokenMap[token].id]) {
-                this.detects[this.userTokenMap[token].id] = [];
-            }
-            const same = this.detects[this.userTokenMap[token].id].find(v => v.type == objectType && v.position);
-            if (!same) {
-                this.detects[this.userTokenMap[token].id].push({type: objectType, position});
-            }
+        const userId = options.userId?.toString();
+        if (!userId) return;
 
-            this.syncObjects();
+        const objs = this.userObjects[userId];
+
+        for (let i = 0 ; i < objs.length; i++) {
+            if (objs[i].type === objectType)
+            {
+                objs[i].obj.show();
+                objs[i].obj.move(position);
+            }
         }
-        */
     }
+
 
     private onLocationChanged(options: { userId: Guid; }, ...args: any[]) : void
     {
         console.log(`onLocationChanged... user [${options.userId}]`);
-        const locationId = args[0];
-        const token = args[1];
+        if (!options.userId) return;
+        //const locationId = args[0];
+        const locationId = "Q31ezv5HbgkWbDcn,1x79,53";
         console.log(locationId);
-        console.log(token);
+        const userId = options.userId?.toString();
+        if (!userId) return;
+        const user = this.userMap[userId];
+        if (user && user.location != locationId)
+        {
+            user.location = locationId;
+            this.removeNotesFromUser(userId);
+        }
+        
         axios.get(`https://dev.arp.tizenservice.xyz/api/v1/object/locations/${locationId}`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${user.token}` }
         }).
         then(resp => {
-            for (let i = 0; i < this.memos.length; i++) {
-                this.memos[i].linkedObject?.hide();
-                this.memos[i].linkedObject = null;
+            const memos = resp.data as Array<Memo>;
+
+            const locationUsers: Array<UserInfo> = [];
+
+            for (const id in this.userMap) {
+                if (this.userMap[id].location == locationId) {
+                    locationUsers.push(this.userMap[id]);
+                }
             }
-            this.memos = resp.data as Array<Memo>;
-            this.syncObjects();
+
+            for (let m = 0; m < memos.length; m++) {
+                const memo = memos[m];
+
+                for (let i = 0; i < locationUsers.length; i++) {
+                    const user = locationUsers[i];
+                    const obj = new Note(this.ctx, this.assets, memo.contents, 0.2, 0.2, {x: 0, y: 0, z: 0}, `${memo.textureType}.png`, user.user);
+                    this.userObjects[userId].push({
+                        memoId: memo.id,
+                        type: memo.linkedObjectType,
+                        obj
+                    });
+                }
+            }
         });
     }
 
-    private syncObjects()
-    {
-        if (this.memos.length < 1)
-        {
-            return;
-        }
-
-        for (let i = 0; i < this.memos.length; i++) {
-            console.log(
-                `creator: ${this.memos[i].creatorId}\n` +
-                `type: ${this.memos[i].linkedObjectType}\n` +
-                `contents: ${this.memos[i].contents}\n`,
-                `permission: ${this.memos[i].permission}`
-            );
-            if (this.memos[i].linkedObject) continue;
-            /*
-            this.memos[i].linkedObject =
-                new Note(this.ctx, this.assets, 
-                    `type: ${this.memos[i].linkedObjectType}\n${this.memos[i].contents}`, 0.2, 0.2, {x:0, y:0, z:0}, `${this.memos[i].textureType}.png`);
-            for (let j=0; j < this.detects.length; j++) {
-                if (this.memos[i].linkedObjectType === this.detects[j].type)
-                {
-                    this.memos[i].linkedObject?.move(this.detects[j].position);
-                    console.log(this.detects[j].position);
-                    this.memos[i].linkedObject?.show();
-                    break;
-                }
+    private removeNotesFromUser(userId: string) {
+        if (userId in this.userObjects) {
+            const objs = this.userObjects[userId];
+            for (let i=0; i < objs.length; i++) {
+                objs[i].obj.hide();
             }
-            */
+            this.userObjects[userId] = [];
         }
     }
 }

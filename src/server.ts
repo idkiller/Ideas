@@ -7,10 +7,7 @@ function main() {
         baseDir: resolvePath(__dirname, '../public')
     });
 
-    server.adapter.onConnection(ctx => {
-        console.log("CONNECTED ---- SAME CTX??? ");
-        new App(ctx);
-    });
+    server.adapter.onConnection(ctx => new App(ctx));
 }
 
 const delay = 1000;

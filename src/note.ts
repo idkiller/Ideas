@@ -22,7 +22,8 @@ export class Note implements Component {
                 private width: number,
                 private height: number,
                 private position: { x: number, y: number, z: number },
-                private bgImg?: string) {
+                private bgImg?: string,
+                private user?: MRE.User) {
         this.bgImg = !this.bgImg ? "postit.png" : this.bgImg;
     }
 
@@ -106,6 +107,7 @@ export class Note implements Component {
 
         this.label = MRE.Actor.Create(this.ctx, {
             actor: {
+                exclusiveToUser: this.user ? this.user.id : undefined,
                 name: 'Label',
                 parentId: this.plane.id,
                 transform: {
