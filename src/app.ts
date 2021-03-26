@@ -87,8 +87,8 @@ export default class Ideas {
     {
         console.log(`onLocationChanged... user [${options.userId}]`);
         if (!options.userId) return;
-        //const locationId = args[0];
-        const locationId = "Q31ezv5HbgkWbDcn,1x79,53";
+        const locationId = args[0];
+        //const locationId = "Q31ezv5HbgkWbDcn,1x79,53";
         console.log(locationId);
         const userId = options.userId?.toString();
         if (!userId) return;
