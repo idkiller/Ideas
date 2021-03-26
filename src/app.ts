@@ -119,7 +119,12 @@ export default class Ideas {
 
                 for (let i = 0; i < locationUsers.length; i++) {
                     const user = locationUsers[i];
-                    const obj = new Note(this.ctx, this.assets, memo.contents, 0.2, 0.2, {x: 0, y: 0, z: 0}, `${memo.textureType}.png`, user.user);
+                    const obj = new Note(this.ctx, this.assets,
+                        `permission: ${memo.permission}\n` +
+                        `location: ${memo.locationId}` +
+                        `type: ${memo.linkedObjectType}` +
+                        memo.contents,
+                        0.2, 0.2, {x: 0, y: 0, z: 0}, `${memo.textureType}.png`, user.user);
                     this.userObjects[userId].push({
                         memoId: memo.id,
                         type: memo.linkedObjectType,
@@ -156,5 +161,4 @@ interface Memo {
     contents: string;
     id: string;
     creatorId: string;
-    linkedObject?: Note;
 }
