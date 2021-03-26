@@ -59,7 +59,7 @@ export default class Ideas {
     }
 
     private onObjectDetected(options: { userId: Guid; }, ...args: any[]): void {
-        console.log(`onObjectDetected... user [${options.userId}]`);
+        console.log(`onObjectDetected... user [${options.userId}], ${args[0]}`);
         const objectType = args[0];
         const x = args[1];
         const y = args[2];
@@ -77,6 +77,7 @@ export default class Ideas {
             {
                 objs[i].obj.show();
                 objs[i].obj.move(position);
+                console.log(`${objectType} => ${position.x}, ${position.y}, ${position.z}`);
             }
         }
     }
@@ -92,8 +93,9 @@ export default class Ideas {
         const userId = options.userId?.toString();
         if (!userId) return;
         const user = this.userMap[userId];
-        if (user && user.location != locationId)
+        if (user && user.location !== locationId)
         {
+            console.log(`[${userId}] old objects removed`);
             user.location = locationId;
             this.removeNotesFromUser(userId);
         }
