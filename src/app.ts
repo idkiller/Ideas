@@ -108,7 +108,7 @@ export default class Ideas {
 
             const locationUsers: Array<UserInfo> = [];
 
-            console.log(`user in location: ${locationId}`);
+            console.log(`user in location: ${locationId} - ${options.userId}`);
             for (const id in this.userMap) {
                 if (this.userMap[id].location == locationId) {
                     locationUsers.push(this.userMap[id]);
@@ -132,7 +132,7 @@ export default class Ideas {
                         type: memo.linkedObjectType,
                         obj
                     });
-                    console.log(`object is created : ${memo.linkedObjectType} - ${memo.permission} - [${memo.contents}] - ${user.user.name}`);
+                    console.log(`object is created : ${memo.linkedObjectType} - ${memo.permission} - [${memo.contents}] - ${user.user.name} - ${options.userId}`);
                 }
             }
         });
