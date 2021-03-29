@@ -12,13 +12,15 @@ const RPC = {
 interface Noteobject {
     memoId: string,
     type: string,
-    obj: Note
+    obj: Note,
+    positioned: boolean,
 }
 
 interface UserInfo {
     user: MRE.User,
     location: string,
-    token: string
+    token: string,
+    remainedPositions: Array<{ position: {x: number, y: number, z: number}, type: string, locationId: string }>
 }
 
 export default class Ideas {
@@ -51,7 +53,8 @@ export default class Ideas {
         this.userMap[userId] = {
             user,
             location: "",
-            token: user.properties['token']
+            token: user.properties['token'],
+            remainedPositions: []
         }
         this.removeNotesFromUser(userId);
         this.userObjects[userId] = [];
@@ -64,6 +67,7 @@ export default class Ideas {
         const x = args[1];
         const y = args[2];
         const z = args[3];
+        const locationId = args[4];
         const position = x instanceof Number && y instanceof Number && z instanceof Number ?
             { x: 0, y: 0, z: 0 } : { x, y, z };
 
@@ -72,13 +76,20 @@ export default class Ideas {
 
         const objs = this.userObjects[userId];
 
-        for (let i = 0 ; i < objs.length; i++) {
-            if (objs[i].type === objectType)
-            {
-                objs[i].obj.show();
-                objs[i].obj.move(position);
-                console.log(`${objectType} => ${position.x}, ${position.y}, ${position.z} - ${userId}`);
+        if (objs.length > 0) {
+            for (let i = 0 ; i < objs.length; i++) {
+                if (objs[i].type === objectType)
+                {
+                    objs[i].obj.show();
+                    objs[i].obj.move(position);
+                    objs[i].positioned = true;
+                    console.log(`${objectType} => ${position.x}, ${position.y}, ${position.z} - ${userId}`);
+                }
             }
+        }
+        else {
+            this.userMap[userId].remainedPositions.push({position, type: objectType, locationId});
+            console.log(`remained object is pushed : ${objectType} / ${locationId} / (${position.x}, ${position.y}, ${position.z})`);
         }
         console.log(`end onObjectDetected...`);
     }
@@ -131,7 +142,8 @@ export default class Ideas {
                     this.userObjects[userId].push({
                         memoId: memo.id,
                         type: memo.linkedObjectType,
-                        obj
+                        obj,
+                        positioned: false
                     });
                     console.log(`object is created : ${memo.linkedObjectType} - ${memo.permission} - [${memo.contents}] - ${user.user.name} - ${options.userId}`);
                 }
