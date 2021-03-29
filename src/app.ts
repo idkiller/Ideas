@@ -84,14 +84,12 @@ export default class Ideas {
                     objs[i].obj.move(position);
                     objs[i].positioned = true;
                     console.log(`${objectType} => ${position.x}, ${position.y}, ${position.z} - ${userId}`);
+                    break;
                 }
             }
         }
-        else {
-            this.userMap[userId].remainedPositions.push({position, type: objectType, locationId});
-            console.log(`remained position is pushed : ${objectType} / ${locationId} / (${position.x}, ${position.y}, ${position.z})`);
-        }
-        console.log(`end onObjectDetected...`);
+        this.userMap[userId].remainedPositions.push({position, type: objectType, locationId});
+        console.log(`remained position is pushed : ${objectType} / ${locationId} / (${position.x}, ${position.y}, ${position.z})`);
     }
 
 
@@ -152,7 +150,7 @@ export default class Ideas {
                         if (p.locationId === locationId && p.type === memo.linkedObjectType) {
                             obj.show();
                             obj.move(p.position);
-                            this.userMap[userId].remainedPositions.splice(i, 1);
+                            //this.userMap[userId].remainedPositions.splice(i, 1);
                             console.log(`object moved : ${memo.linkedObjectType}, (${p.position.x}, ${p.position.y}, ${p.position.z})`);
                             break;
                         }
