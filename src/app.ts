@@ -89,7 +89,7 @@ export default class Ideas {
         }
         else {
             this.userMap[userId].remainedPositions.push({position, type: objectType, locationId});
-            console.log(`remained object is pushed : ${objectType} / ${locationId} / (${position.x}, ${position.y}, ${position.z})`);
+            console.log(`remained position is pushed : ${objectType} / ${locationId} / (${position.x}, ${position.y}, ${position.z})`);
         }
         console.log(`end onObjectDetected...`);
     }
@@ -146,6 +146,15 @@ export default class Ideas {
                         positioned: false
                     });
                     console.log(`object is created : ${memo.linkedObjectType} - ${memo.permission} - [${memo.contents}] - ${user.user.name} - ${options.userId}`);
+
+                    for (let i = this.userMap[userId].remainedPositions.length - 1; i >= 0; i--) {
+                        const p = this.userMap[userId].remainedPositions[i];
+                        if (p.locationId === locationId && p.type === memo.type) {
+                            obj.show();
+                            obj.move(p.position);
+                        }
+                        this.userMap[userId].remainedPositions.splice(i, 1);
+                    }
                 }
             }
         });
