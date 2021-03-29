@@ -80,6 +80,7 @@ export default class Ideas {
                 console.log(`${objectType} => ${position.x}, ${position.y}, ${position.z} - ${userId}`);
             }
         }
+        console.log(`end onObjectDetected...`);
     }
 
 
