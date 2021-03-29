@@ -149,11 +149,13 @@ export default class Ideas {
 
                     for (let i = this.userMap[userId].remainedPositions.length - 1; i >= 0; i--) {
                         const p = this.userMap[userId].remainedPositions[i];
-                        if (p.locationId === locationId && p.type === memo.type) {
+                        if (p.locationId === locationId && p.type === memo.linkedObjectType) {
                             obj.show();
                             obj.move(p.position);
+                            this.userMap[userId].remainedPositions.splice(i, 1);
+                            console.log(`object moved : ${memo.linkedObjectType}, (${p.position.x}, ${p.position.y}, ${p.position.z})`);
+                            break;
                         }
-                        this.userMap[userId].remainedPositions.splice(i, 1);
                     }
                 }
             }
