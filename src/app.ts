@@ -77,7 +77,7 @@ export default class Ideas {
             {
                 objs[i].obj.show();
                 objs[i].obj.move(position);
-                console.log(`${objectType} => ${position.x}, ${position.y}, ${position.z}`);
+                console.log(`${objectType} => ${position.x}, ${position.y}, ${position.z} - ${userId}`);
             }
         }
     }
