@@ -103,6 +103,10 @@ export default class Ideas {
         const userId = options.userId?.toString();
         if (!userId) return;
         const user = this.userMap[userId];
+        if (!user) {
+            console.log(`NOT FOUND USER - ${options.userId}`);
+            return;
+        }
         if (user && user.location !== locationId)
         {
             console.log(`[${userId}] old objects removed`);
@@ -133,8 +137,8 @@ export default class Ideas {
                     const user = locationUsers[i];
                     const obj = new Note(this.ctx, this.assets,
                         `permission: ${memo.permission}\n` +
-                        `location: ${memo.locationId}` +
-                        `type: ${memo.linkedObjectType}` +
+                        `location: ${memo.locationId.sub}\n` +
+                        `type: ${memo.linkedObjectType}\n` +
                         memo.contents,
                         0.2, 0.2, {x: 0, y: 0, z: 0}, `${memo.textureType}.png`, user.user);
                     this.userObjects[userId].push({
