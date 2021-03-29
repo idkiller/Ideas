@@ -136,9 +136,9 @@ export default class Ideas {
                 for (let i = 0; i < locationUsers.length; i++) {
                     const user = locationUsers[i];
                     const obj = new Note(this.ctx, this.assets,
-                        `permission: ${memo.permission}\n` +
-                        `location: ${memo.locationId.substring(0, memo.locationId.length - 10)}\n` +
-                        `type: ${memo.linkedObjectType}\n` +
+                        `p: ${memo.permission}\n` +
+                        `l: ${memo.locationId.substr(- 10)}\n` +
+                        `t: ${memo.linkedObjectType}\n` +
                         memo.contents,
                         0.2, 0.2, {x: 0, y: 0, z: 0}, `${memo.textureType}.png`, user.user);
                     this.userObjects[userId].push({
