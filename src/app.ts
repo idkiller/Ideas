@@ -120,7 +120,7 @@ export default class Ideas {
 
             const locationUsers: Array<UserInfo> = [];
 
-            console.log(`user in location: ${locationId} - ${options.userId}`);
+            console.log(`user in location: ${locationId} - ${options.userId}, object: ${memos.length}`);
             for (const id in this.userMap) {
                 if (this.userMap[id].location == locationId) {
                     locationUsers.push(this.userMap[id]);
