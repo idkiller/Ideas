@@ -132,7 +132,7 @@ export default class Ideas {
                         type: memo.linkedObjectType,
                         obj
                     });
-                    console.log(`object is created : ${memo.linkedObjectType} - ${memo.permission} - ${memo.contents}`);
+                    console.log(`object is created : ${memo.linkedObjectType} - ${memo.permission} - [${memo.contents}] - ${user.user.name}`);
                 }
             }
         });
