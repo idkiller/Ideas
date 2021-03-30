@@ -15,6 +15,7 @@ export class Note implements Component {
     private bgMaterial: MRE.Material;
     private label: MRE.Actor;
     private bgTexture: MRE.Texture;
+    private buttonBehavior: MRE.ButtonBehavior;
 
     constructor(private ctx: MRE.Context,
                 private am: MRE.AssetContainer,
@@ -84,6 +85,40 @@ export class Note implements Component {
                 },
                 collider: { geometry: { shape: MRE.ColliderType.Auto }}
             }
+        });
+
+        const right = MRE.Vector3.Right();
+        const flipAnimData = this.am.createAnimationData('DoAFlip', {
+            tracks: [
+                {
+                    target: MRE.ActorPath("target").transform.local.rotation,
+                    keyframes: [{
+                        time: 0,
+                        value: MRE.Quaternion.RotationAxis(right, 0)
+                    }, {
+                        time: 0.25,
+                        value: MRE.Quaternion.RotationAxis(right, Math.PI / 2)
+                    }, {
+                        time: 0.5,
+                        value: MRE.Quaternion.RotationAxis(right, Math.PI)
+                    }, {
+                        time: 0.75,
+                        value: MRE.Quaternion.RotationAxis(right, 3 * Math.PI / 2)
+                    }, {
+                        time: 1,
+                        value: MRE.Quaternion.RotationAxis(right, 2 * Math.PI)
+                    }],
+                    easing: MRE.AnimationEaseCurves.Linear
+                }
+            ]
+        });
+
+        const flipAnim = flipAnimData.bind({ target: this.plane });
+        flipAnim.then(anim => {
+            this.buttonBehavior = this.plane.setBehavior(MRE.ButtonBehavior);
+            this.buttonBehavior.onClick(_ => {
+                anim.play();
+            });
         });
 
         /*
