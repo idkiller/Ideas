@@ -16,6 +16,7 @@ export class Note implements Component {
     private label: MRE.Actor;
     private bgTexture: MRE.Texture;
     private buttonBehavior: MRE.ButtonBehavior;
+    private intervalKey: NodeJS.Timeout;
 
     constructor(private ctx: MRE.Context,
                 private am: MRE.AssetContainer,
@@ -29,6 +30,7 @@ export class Note implements Component {
     }
 
     public hide(): void {
+        clearInterval(this.intervalKey);
         this.destroy();
     }
 
@@ -101,13 +103,17 @@ export class Note implements Component {
                     }, {
                         time: 0.5,
                         value: MRE.Quaternion.RotationAxis(right, Math.PI)
-                    }, {
+                    }
+                    /*
+                    , {
                         time: 0.75,
                         value: MRE.Quaternion.RotationAxis(right, 3 * Math.PI / 2)
                     }, {
                         time: 1,
                         value: MRE.Quaternion.RotationAxis(right, 2 * Math.PI)
-                    }],
+                    }
+                    */
+                    ],
                     easing: MRE.AnimationEaseCurves.Linear
                 }
             ]
@@ -115,10 +121,13 @@ export class Note implements Component {
 
         const flipAnim = flipAnimData.bind({ target: this.plane });
         flipAnim.then(anim => {
+            /*
             this.buttonBehavior = this.plane.setBehavior(MRE.ButtonBehavior);
             this.buttonBehavior.onClick(_ => {
                 anim.play();
             });
+            */
+           this.intervalKey = setInterval(() => anim.play(), 1000);
         });
 
         /*
