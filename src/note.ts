@@ -82,7 +82,7 @@ export class Note implements Component {
                     },
                     local: {
                         scale: {x: 0.01, y: this.width, z: this.height},
-                        rotation: {x: 0, y:0, z: 0}
+                        rotation: {x:0, y:1.0, z: 0}
                     }
                 },
                 collider: { geometry: { shape: MRE.ColliderType.Auto }}
