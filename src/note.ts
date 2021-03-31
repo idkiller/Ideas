@@ -88,7 +88,7 @@ export class Note implements Component {
                 collider: { geometry: { shape: MRE.ColliderType.Auto }}
             }
         });
-
+        /*
         const duration = 5;
         const up = MRE.Vector3.Up();
         const flipAnimData = this.am.createAnimationData('DoAFlip', {
@@ -119,21 +119,8 @@ export class Note implements Component {
 
         const flipAnim = flipAnimData.bind({ target: this.plane });
         flipAnim.then(anim => {
-            /*
-            this.buttonBehavior = this.plane.setBehavior(MRE.ButtonBehavior);
-            this.buttonBehavior.onClick(_ => {
-                anim.play();
-            });
-            */
            this.intervalKey = setInterval(() => anim.play(), 10000);
         });
-
-        /*
-        const t = setInterval(() => this.plane.transform.local.rotation = new Quaternion(
-            0,
-            this.plane.transform.local.rotation.y + 0.1,
-            0
-        ), 1000);
         */
 
         let textArray = this.splitLine(this.text, 16);

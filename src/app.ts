@@ -41,9 +41,10 @@ export default class Ideas {
 
     private async started() {
         console.log("START Application");
-
+        /*
         const note = new Note(this.ctx, this.assets, "this is a test note\nthis is a test note\nthis is a test note\nthis is a test note", 0.2, 0.2, {x: 0, y: 0, z: 0}, `postit.png`);
         note.show();
+        */
     }
 
     private onUserJoined(user: MRE.User): void {
