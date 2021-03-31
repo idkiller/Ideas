@@ -82,37 +82,35 @@ export class Note implements Component {
                     },
                     local: {
                         scale: {x: 0.01, y: this.width, z: this.height},
-                        rotation: {x: 0, y:0.7, z: 0}
+                        rotation: {x: 0, y:0, z: 0}
                     }
                 },
                 collider: { geometry: { shape: MRE.ColliderType.Auto }}
             }
         });
 
-        const right = MRE.Vector3.Right();
+        const duration = 5;
+        const up = MRE.Vector3.Up();
         const flipAnimData = this.am.createAnimationData('DoAFlip', {
             tracks: [
                 {
                     target: MRE.ActorPath("target").transform.local.rotation,
                     keyframes: [{
-                        time: 0,
-                        value: MRE.Quaternion.RotationAxis(right, 0)
+                        time: 0 * duration,
+                        value: MRE.Quaternion.RotationAxis(up, 0)
                     }, {
-                        time: 0.25,
-                        value: MRE.Quaternion.RotationAxis(right, Math.PI / 2)
+                        time: 0.25 * duration,
+                        value: MRE.Quaternion.RotationAxis(up, Math.PI / 2)
                     }, {
-                        time: 0.5,
-                        value: MRE.Quaternion.RotationAxis(right, Math.PI)
+                        time: 0.5 * duration,
+                        value: MRE.Quaternion.RotationAxis(up, Math.PI)
+                    }, {
+                        time: 0.75 * duration,
+                        value: MRE.Quaternion.RotationAxis(up, 3 * Math.PI / 2)
+                    }, {
+                        time: 1 * duration,
+                        value: MRE.Quaternion.RotationAxis(up, 2 * Math.PI)
                     }
-                    /*
-                    , {
-                        time: 0.75,
-                        value: MRE.Quaternion.RotationAxis(right, 3 * Math.PI / 2)
-                    }, {
-                        time: 1,
-                        value: MRE.Quaternion.RotationAxis(right, 2 * Math.PI)
-                    }
-                    */
                     ],
                     easing: MRE.AnimationEaseCurves.Linear
                 }
@@ -127,7 +125,7 @@ export class Note implements Component {
                 anim.play();
             });
             */
-           this.intervalKey = setInterval(() => anim.play(), 1000);
+           this.intervalKey = setInterval(() => anim.play(), 10000);
         });
 
         /*
