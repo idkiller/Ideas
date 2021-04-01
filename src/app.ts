@@ -140,7 +140,6 @@ export default class Ideas {
                 for (let i = 0; i < locationUsers.length; i++) {
                     const user = locationUsers[i];
                     const obj = new Note(this.ctx, this.assets,
-                        `u: ${this.userMap[memo.creatorId].user.name}\n` +
                         `p: ${memo.permission}\n` +
                         `l: ${memo.locationId.substr(- 10)}\n` +
                         `t: ${memo.linkedObjectType}\n` +

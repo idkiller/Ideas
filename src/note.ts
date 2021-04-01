@@ -72,6 +72,7 @@ export class Note implements Component {
         this.plane = MRE.Actor.Create(this.ctx, {
             actor: {
                 name: 'Note',
+                exclusiveToUser: this.user ? this.user.id : undefined,
                 appearance: {
                     meshId: this.planeMesh.id,
                     materialId: this.bgMaterial.id
