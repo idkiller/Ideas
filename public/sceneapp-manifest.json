@@ -1,4 +1,3 @@
 {
-    "UseObjectTypeDetection": true,
-    "AuthoringTool": "Sticker"
+    "AuthoringTool": "object-sticker"
 }
