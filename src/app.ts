@@ -20,7 +20,6 @@ interface UserInfo {
     user: MRE.User,
     location: string,
     token: string,
-    remainedPositions: Array<{ position: {x: number, y: number, z: number}, type: string, locationId: string }>
 }
 
 export default class Ideas {
@@ -36,7 +35,6 @@ export default class Ideas {
         this.ctx.onStarted(() => this.started());
         this.ctx.onUserJoined(this.onUserJoined.bind(this));
         this.ctx.rpc.on(RPC.LocationChanged, this.onLocationChanged.bind(this));
-        this.ctx.rpc.on(RPC.ObjectDetected, this.onObjectDetected.bind(this));
     }
 
     private async started() {
@@ -57,45 +55,12 @@ export default class Ideas {
         this.userMap[userId] = {
             user,
             location: "",
-            token: user.properties['token'],
-            remainedPositions: []
+            token: user.properties['token']
         }
         this.removeNotesFromUser(userId);
         this.userObjects[userId] = [];
         console.log(`user: ${user.name}[${userId}] is registed`);
     }
-
-    private onObjectDetected(options: { userId: Guid; }, ...args: any[]): void {
-        console.log(`onObjectDetected... user [${options.userId}], ${args[0]}`);
-        const objectType = args[0];
-        const x = args[1];
-        const y = args[2];
-        const z = args[3];
-        const locationId = args[4];
-        const position = x instanceof Number && y instanceof Number && z instanceof Number ?
-            { x: 0, y: 0, z: 0 } : { x, y, z };
-
-        const userId = options.userId?.toString();
-        if (!userId) return;
-
-        const objs = this.userObjects[userId];
-
-        if (objs.length > 0) {
-            for (let i = 0 ; i < objs.length; i++) {
-                if (objs[i].type === objectType)
-                {
-                    objs[i].obj.show();
-                    objs[i].obj.move(position);
-                    objs[i].positioned = true;
-                    console.log(`${objectType} => ${position.x}, ${position.y}, ${position.z} - ${userId}`);
-                    break;
-                }
-            }
-        }
-        this.userMap[userId].remainedPositions.push({position, type: objectType, locationId});
-        console.log(`remained position is pushed : ${objectType} / ${locationId} / (${position.x}, ${position.y}, ${position.z})`);
-    }
-
 
     private onLocationChanged(options: { userId: Guid; }, ...args: any[]) : void
     {
@@ -154,19 +119,6 @@ export default class Ideas {
                     console.log(`object is created : ${memo.linkedObjectType} - ${memo.permission} - [${memo.contents}] - ${user.user.name} - ${options.userId}`);
 
                     obj.show();
-
-                    /*
-                    for (let i = this.userMap[userId].remainedPositions.length - 1; i >= 0; i--) {
-                        const p = this.userMap[userId].remainedPositions[i];
-                        if (p.locationId === locationId && p.type === memo.linkedObjectType) {
-                            obj.show();
-                            obj.move(p.position);
-                            //this.userMap[userId].remainedPositions.splice(i, 1);
-                            console.log(`object moved : ${memo.linkedObjectType}, (${p.position.x}, ${p.position.y}, ${p.position.z})`);
-                            break;
-                        }
-                    }
-                    */
                 }
             }
         });
@@ -181,11 +133,6 @@ export default class Ideas {
             this.userObjects[userId] = [];
         }
     }
-}
-
-interface ObjectInfo {
-    type: string;
-    position: {x: number, y: number, z: number};
 }
 
 interface Memo {
