@@ -25,7 +25,8 @@ export class Note implements Component {
                 private height: number,
                 private position: { x: number, y: number, z: number },
                 private bgImg?: string,
-                private user?: MRE.User) {
+                private user?: MRE.User,
+                private objectName?: string) {
         this.bgImg = !this.bgImg ? "postit.png" : this.bgImg;
     }
 
@@ -71,7 +72,8 @@ export class Note implements Component {
 
         this.plane = MRE.Actor.Create(this.ctx, {
             actor: {
-                name: 'Note',
+                name: `ATDO-${this.objectName}`,
+                tag: 'AttachToDetectedObject',
                 exclusiveToUser: this.user ? this.user.id : undefined,
                 appearance: {
                     meshId: this.planeMesh.id,

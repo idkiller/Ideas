@@ -42,7 +42,7 @@ export default class Ideas {
     private async started() {
         console.log("START Application");
         /*
-        const note = new Note(this.ctx, this.assets, "this is a test note\nthis is a test note\nthis is a test note\nthis is a test note", 0.2, 0.2, {x: 0, y: 0, z: 0}, `postit.png`);
+        const note = new Note(this.ctx, this.assets, "this is a test note\nthis is a test note\nthis is a test note\nthis is a test note", 0.2, 0.2, {x: 0, y: 0, z: 0}, `postit.png`, undefined, 'keyboard');
         note.show();
         */
     }
@@ -144,7 +144,7 @@ export default class Ideas {
                         `l: ${memo.locationId.substr(- 10)}\n` +
                         `t: ${memo.linkedObjectType}\n` +
                         memo.contents,
-                        0.2, 0.2, {x: 0, y: 0, z: 0}, `${memo.textureType}.png`, user.user);
+                        0.2, 0.2, {x: 0, y: 0, z: 0}, `${memo.textureType}.png`, user.user, memo.linkedObjectType);
                     this.userObjects[userId].push({
                         memoId: memo.id,
                         type: memo.linkedObjectType,
@@ -153,6 +153,9 @@ export default class Ideas {
                     });
                     console.log(`object is created : ${memo.linkedObjectType} - ${memo.permission} - [${memo.contents}] - ${user.user.name} - ${options.userId}`);
 
+                    obj.show();
+
+                    /*
                     for (let i = this.userMap[userId].remainedPositions.length - 1; i >= 0; i--) {
                         const p = this.userMap[userId].remainedPositions[i];
                         if (p.locationId === locationId && p.type === memo.linkedObjectType) {
@@ -163,6 +166,7 @@ export default class Ideas {
                             break;
                         }
                     }
+                    */
                 }
             }
         });
